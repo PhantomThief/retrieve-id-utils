@@ -18,15 +18,15 @@ import com.google.common.collect.Maps;
 public class PairKeyRequestContextCache<K1, K2, V>
         extends RequestContextCache<TwoTuple<K1, K2>, V> {
 
-    public V get(K1 key1, K2 key2) {
+    public V getMultiKey(K1 key1, K2 key2) {
         return get(Tuple.tuple(key1, key2));
     }
 
-    public void set(K1 key1, K2 key2, V value) {
+    public void setMultiKey(K1 key1, K2 key2, V value) {
         set(Tuple.tuple(key1, key2), value);
     }
 
-    public void remove(K1 key1, K2 key2) {
+    public void removeMultiKey(K1 key1, K2 key2) {
         remove(Tuple.tuple(key1, key2));
     }
 
