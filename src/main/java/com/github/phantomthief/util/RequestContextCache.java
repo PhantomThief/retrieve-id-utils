@@ -28,7 +28,7 @@ import com.google.common.collect.Maps;
  *
  * @date 2014年4月11日 下午4:20:24
  */
-public final class RequestContextCache<K, V> extends RequestContextHolder
+public class RequestContextCache<K, V> extends RequestContextHolder
         implements IMultiDataAccess<K, V> {
 
     private static final String PREFIX = "_c";
@@ -82,8 +82,25 @@ public final class RequestContextCache<K, V> extends RequestContextHolder
         }
     }
 
+    /**
+     * 请尽量使用
+     * {@link com.github.phantomthief.util.RequestContextCache#get(Collection)}
+     * 
+     * @param key
+     * @return
+     */
     public V get(K key) {
-        return get(Collections.singleton(key)).get(key);
+        Map<K, V> thisCache;
+        request.addAndGet(1);
+        if ((thisCache = init()) != null) {
+            V v = thisCache.get(key);
+            if (v != null) {
+                hit.addAndGet(1);
+            }
+            return v;
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -112,8 +129,22 @@ public final class RequestContextCache<K, V> extends RequestContextHolder
         }
     }
 
+    /**
+     * 请尽量使用
+     * {@link com.github.phantomthief.util.RequestContextCache#set(Map)}
+     * 
+     * @param key
+     * @param value
+     */
     public void set(K key, V value) {
-        set(Collections.singletonMap(key, value));
+        Map<K, V> thisMap = init();
+        if (thisMap != null) {
+            if (key != null && value != null) {
+                set.addAndGet(1);
+                thisMap.put(key, value);
+                valueTypes.add(value.getClass());
+            }
+        }
     }
 
     public void remove(K key) {
