@@ -56,7 +56,17 @@ public class RequestContextCache<K, V> extends RequestContextHolder
             ALL_NAMES.put(uniqName, this);
             uniqueNameForRequestContext = uniqName;
         }
-        declareLocation = Thread.currentThread().getStackTrace()[2].toString();
+        String location;
+        try {
+            location = Thread.currentThread().getStackTrace()[locationCallStackDepth()].toString();
+        } catch (Throwable e) {
+            location = null;
+        }
+        declareLocation = location;
+    }
+
+    protected int locationCallStackDepth() {
+        return 2;
     }
 
     @SuppressWarnings("unchecked")
