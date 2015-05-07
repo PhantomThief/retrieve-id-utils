@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -37,7 +38,9 @@ public final class RetrieveIdUtils {
 
         if (iterator.hasNext() && CollectionUtils.isNotEmpty(sourceIds)) {
             final IMultiDataAccess<K, V> dao = iterator.next();
-            final Map<K, V> retreivedModels = dao.get(sourceIds);
+            final Map<K, V> retreivedModels = dao.get(sourceIds).entrySet().stream()
+                    .filter(e -> e.getValue() != null)
+                    .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
             TwoTuple<Boolean, Collection<K>> allKeysReady = allKeysReady(retreivedModels,
                     sourceIds);
             if (!allKeysReady.first) {
