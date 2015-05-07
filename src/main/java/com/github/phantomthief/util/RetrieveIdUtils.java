@@ -63,7 +63,7 @@ public final class RetrieveIdUtils {
         Set<K> leftKeys = Sets.newHashSetWithExpectedSize(
                 Math.max(MIN_INITIAL_CAPACITY, allKeys.size() - dataMap.size()));
         for (K key : allKeys) {
-            if (!dataMap.containsKey(key)) {
+            if (dataMap.get(key) == null) {
                 allReady = false;
                 leftKeys.add(key);
             }
