@@ -1,4 +1,4 @@
-retrieve-id-utils
+retrieve-id-utils [![Build Status](https://travis-ci.org/PhantomThief/retrieve-id-utils.svg)](https://travis-ci.org/PhantomThief/retrieve-id-utils) [![Coverage Status](https://coveralls.io/repos/PhantomThief/retrieve-id-utils/badge.svg?branch=master)](https://coveralls.io/r/PhantomThief/retrieve-id-utils?branch=master)
 =======================
 
 批量获取数据，多级存储结构（或者缓存）筛选。
@@ -13,7 +13,7 @@ retrieve-id-utils
 <dependency>
     <groupId>com.github.phantomthief</groupId>
     <artifactId>retrieve-id-utils</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
 </dependency>
 ```
 
@@ -22,7 +22,7 @@ retrieve-id-utils
 ```Java
 
 List<Integer> ids = Arrays.asList(1, 2, 3, 4, 5);
-Map<Integer, String> result = RetrieveIdUtils.get(ids, Arrays.asList( //
+Map<Integer, String> result = RetrieveIdUtils.get(ids, Arrays.asList( s//
         new IMultiDataAccess<Integer, String>() {
 
             @Override
