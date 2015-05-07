@@ -74,7 +74,7 @@ public final class RetrieveIdUtils {
     private static <K, V> Map<K, V> subtractByKey(Map<K, V> a, Map<K, V> b) {
         Map<K, V> result = Maps.newHashMapWithExpectedSize(a.size());
         for (Entry<K, V> entry : a.entrySet()) {
-            if (!b.containsKey(entry.getKey())) {
+            if (b.get(entry.getKey()) != null) {
                 result.put(entry.getKey(), entry.getValue());
             }
         }
