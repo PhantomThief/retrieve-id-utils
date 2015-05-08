@@ -20,6 +20,8 @@ public class AccessCounter {
     private final AtomicLong setCount = new AtomicLong();
     private final AtomicLong setCost = new AtomicLong();
 
+    private final long resetTime = System.currentTimeMillis();
+
     public long getRequestKeyCount() {
         return requestKeyCount.get();
     }
@@ -42,6 +44,10 @@ public class AccessCounter {
 
     public long getSetCount() {
         return setCount.get();
+    }
+
+    public long getResetTime() {
+        return resetTime;
     }
 
     public void statsGet(long getCost, long hitCount, long requestCount) {
