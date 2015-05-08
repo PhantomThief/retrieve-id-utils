@@ -9,9 +9,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Function;
 
 import org.junit.Test;
 
+import com.github.phantomthief.stats.StatsHelper;
+import com.github.phantomthief.util.AccessCounter;
 import com.github.phantomthief.util.IMultiDataAccess;
 import com.github.phantomthief.util.RetrieveIdUtils;
 
@@ -22,10 +25,19 @@ public class TestRetrieveIdUtils {
 
     @Test
     public void test() {
+        StatsHelper<String, AccessCounter> statsHelper = StatsHelper.<AccessCounter> newBuilder() //
+                .setCounterReset(old -> new AccessCounter()) //
+                .build();
+
         List<Integer> ids = Arrays.asList(1, 2, 3, 4, 5);
         Map<Integer, String> firstSet = new HashMap<>();
         Map<Integer, String> result = RetrieveIdUtils.get(ids, Arrays.asList( //
                 new IMultiDataAccess<Integer, String>() {
+
+                    @Override
+                    public String getName() {
+                        return "first one";
+                    }
 
                     @Override
                     public Map<Integer, String> get(Collection<Integer> keys) {
@@ -40,11 +52,16 @@ public class TestRetrieveIdUtils {
                 new IMultiDataAccess<Integer, String>() {
 
                     @Override
+                    public String getName() {
+                        return "second one";
+                    }
+
+                    @Override
                     public Map<Integer, String> get(Collection<Integer> keys) {
                         return secondGet(keys);
                     }
 
-                }));
+                }), statsHelper);
         for (Integer id : ids) {
             if (id < 4) {
                 assert(("a" + id).equals(result.get(id)));
@@ -57,6 +74,7 @@ public class TestRetrieveIdUtils {
             assert(("a" + entry.getKey()).equals(entry.getValue()));
         }
 
+        System.out.println(statsHelper.getFriendlyStats(Function.identity(), Function.identity()));
     }
 
     private Map<Integer, String> firstGet(Collection<Integer> ids) {
