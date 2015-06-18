@@ -32,7 +32,7 @@ public class CacheBasedDataAccess<K, V> implements IMultiDataAccess<K, V> {
      * @param cache
      * @param name
      */
-    private CacheBasedDataAccess(Cache<K, V> cache, String name) {
+    public CacheBasedDataAccess(Cache<K, V> cache, String name) {
         this.cache = cache;
         this.name = name;
     }
