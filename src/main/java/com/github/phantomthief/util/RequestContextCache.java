@@ -3,6 +3,8 @@
  */
 package com.github.phantomthief.util;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,7 +15,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -29,7 +30,7 @@ import com.google.common.collect.Maps;
  * @date 2014年4月11日 下午4:20:24
  */
 public class RequestContextCache<K, V> extends RequestContextHolder
-        implements IMultiDataAccess<K, V> {
+                                implements IMultiDataAccess<K, V> {
 
     private static final String PREFIX = "_c";
 
@@ -134,7 +135,7 @@ public class RequestContextCache<K, V> extends RequestContextHolder
                 set.addAndGet(CollectionUtils.size(dataMap));
                 thisMap.putAll(dataMap);
                 valueTypes.addAll(dataMap.values().stream().filter(Objects::nonNull)
-                        .map(Object::getClass).distinct().collect(Collectors.toList()));
+                        .map(Object::getClass).distinct().collect(toList()));
             }
         }
     }
@@ -198,8 +199,7 @@ public class RequestContextCache<K, V> extends RequestContextHolder
 
     public static final List<RequestContextCache<?, ?>.CacheStats> getStats() {
         synchronized (RequestContextCache.class) {
-            return ALL_NAMES.values().stream().map(i -> i.new CacheStats())
-                    .collect(Collectors.toList());
+            return ALL_NAMES.values().stream().map(i -> i.new CacheStats()).collect(toList());
         }
     }
 

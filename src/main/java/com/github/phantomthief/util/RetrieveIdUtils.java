@@ -3,13 +3,14 @@
  */
 package com.github.phantomthief.util;
 
+import static java.util.stream.Collectors.toMap;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -48,7 +49,7 @@ public final class RetrieveIdUtils {
             long s = System.currentTimeMillis();
             final Map<K, V> retreivedModels = dao.get(sourceIds).entrySet().stream()
                     .filter(e -> e.getValue() != null)
-                    .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+                    .collect(toMap(Entry::getKey, Entry::getValue));
             if (statsHelper != null && dao.getName() != null) {
                 statsHelper.stats(dao.getName(), c -> c.statsGet((System.currentTimeMillis() - s),
                         retreivedModels.size(), sourceIds.size()));
