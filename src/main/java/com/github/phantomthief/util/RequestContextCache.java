@@ -88,7 +88,7 @@ public class RequestContextCache<K, V> extends RequestContextHolder
                 }
             }
             return concurrentHashMap;
-        } catch (IllegalStateException e) {
+        } catch (Throwable e) {
             return null;
         }
     }
