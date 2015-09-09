@@ -6,6 +6,7 @@ package com.github.phantomthief.util;
 import static java.util.stream.Collectors.toMap;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,10 @@ import com.google.common.collect.Sets;
 public final class RetrieveIdUtils {
 
     private static final int MIN_INITIAL_CAPACITY = 16;
+
+    public static <K, V> V get(K key, List<IMultiDataAccess<K, V>> list) {
+        return get(Collections.singleton(key), list).get(key);
+    }
 
     public static <K, V> Map<K, V> get(Collection<K> keys, List<IMultiDataAccess<K, V>> list) {
         return get(keys, list, null);
