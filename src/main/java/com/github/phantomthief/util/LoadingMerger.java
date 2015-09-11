@@ -236,6 +236,26 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
             return resetTime;
         }
 
+        public long getLoadCount() {
+            return loadCount.get();
+        }
+
+        public long getLoadCost() {
+            return loadCost.get();
+        }
+
+        public long getMergedKeys() {
+            return mergedKeys.get();
+        }
+
+        public long getMergeWait() {
+            return mergeWait.get();
+        }
+
+        public long getTimeoutCount() {
+            return timeoutCount.get();
+        }
+
         public static Consumer<LoadingMergeStats> load(long cost) {
             return counter -> counter.doLoad(cost);
         }
