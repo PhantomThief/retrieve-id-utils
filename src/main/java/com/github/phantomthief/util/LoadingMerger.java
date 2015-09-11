@@ -37,17 +37,25 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
     private final long waitOtherLoadingTimeout;
     private final Function<Collection<K>, Map<K, V>> loader;
     private final SingleStatsHelper<LoadingMergeStats> stats;
+    private final String name;
 
     /**
      * @param waitOtherLoadingTimeout
      * @param loader
      */
-    private LoadingMerger(long waitOtherLoadingTimeout, Function<Collection<K>, Map<K, V>> loader) {
+    private LoadingMerger(long waitOtherLoadingTimeout, Function<Collection<K>, Map<K, V>> loader,
+            String name) {
         this.waitOtherLoadingTimeout = waitOtherLoadingTimeout;
         this.stats = SingleStatsHelper.<LoadingMergeStats> newBuilder() //
                 .setCounterReset(LoadingMergeStats.resetter()) //
                 .build();
         this.loader = wrapStats(stats, loader);
+        this.name = name;
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 
     private Function<Collection<K>, Map<K, V>> wrapStats(SingleStatsHelper<LoadingMergeStats> stats,
@@ -184,6 +192,12 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
 
         private long waitOtherLoadingTimeout;
         private Function<Collection<K>, Map<K, V>> loader;
+        private String name;
+
+        public Builder<K, V> name(String name) {
+            this.name = name;
+            return this;
+        }
 
         public Builder<K, V> timeout(long timeout, TimeUnit unit) {
             this.waitOtherLoadingTimeout = unit.toMillis(timeout);
@@ -197,7 +211,7 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
 
         public LoadingMerger<K, V> build() {
             Preconditions.checkNotNull(loader);
-            return new LoadingMerger<>(waitOtherLoadingTimeout, loader);
+            return new LoadingMerger<>(waitOtherLoadingTimeout, loader, name);
         }
     }
 
