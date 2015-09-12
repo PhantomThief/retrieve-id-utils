@@ -44,12 +44,17 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
      * @param loader
      */
     private LoadingMerger(long waitOtherLoadingTimeout, Function<Collection<K>, Map<K, V>> loader,
-            String name) {
+            boolean enableStats, String name) {
         this.waitOtherLoadingTimeout = waitOtherLoadingTimeout;
-        this.stats = SingleStatsHelper.<LoadingMergeStats> newBuilder() //
-                .setCounterReset(LoadingMergeStats.resetter()) //
-                .build();
-        this.loader = wrapStats(stats, loader);
+        if (enableStats) {
+            this.stats = SingleStatsHelper.<LoadingMergeStats> newBuilder() //
+                    .setCounterReset(LoadingMergeStats.resetter()) //
+                    .build();
+            this.loader = wrapStats(stats, loader);
+        } else {
+            this.stats = null;
+            this.loader = loader;
+        }
         this.name = name;
     }
 
@@ -117,13 +122,17 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
                     remainedKeys.add(key);
                 }
             }
-            stats.stats(LoadingMergeStats.merge(otherLoading.size(),
-                    stopwatch.stop().elapsed(TimeUnit.MILLISECONDS)));
+            if (stats != null) {
+                stats.stats(LoadingMergeStats.merge(otherLoading.size(),
+                        stopwatch.stop().elapsed(TimeUnit.MILLISECONDS)));
+            }
             if (!remainedKeys.isEmpty()) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("found timeout retrieve ids:{}", remainedKeys);
                 }
-                stats.stats(LoadingMergeStats.timeout());
+                if (stats != null) {
+                    stats.stats(LoadingMergeStats.timeout());
+                }
                 finalResult.putAll(loader.apply(remainedKeys));
             }
         } else {
@@ -138,8 +147,10 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
                     logger.error("Ops.", e);
                 }
             });
-            stats.stats(LoadingMergeStats.merge(otherLoading.size(),
-                    stopwatch.stop().elapsed(TimeUnit.MILLISECONDS)));
+            if (stats != null) {
+                stats.stats(LoadingMergeStats.merge(otherLoading.size(),
+                        stopwatch.stop().elapsed(TimeUnit.MILLISECONDS)));
+            }
         }
         return finalResult;
     }
@@ -193,6 +204,12 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
         private long waitOtherLoadingTimeout;
         private Function<Collection<K>, Map<K, V>> loader;
         private String name;
+        private boolean enableStats;
+
+        public Builder<K, V> enableStats() {
+            this.enableStats = true;
+            return this;
+        }
 
         public Builder<K, V> name(String name) {
             this.name = name;
@@ -211,7 +228,7 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
 
         public LoadingMerger<K, V> build() {
             Preconditions.checkNotNull(loader);
-            return new LoadingMerger<>(waitOtherLoadingTimeout, loader, name);
+            return new LoadingMerger<>(waitOtherLoadingTimeout, loader, enableStats, name);
         }
     }
 
