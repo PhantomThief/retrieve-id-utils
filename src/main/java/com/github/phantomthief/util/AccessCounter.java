@@ -6,11 +6,14 @@ package com.github.phantomthief.util;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
+import com.github.phantomthief.stats.n.counter.Duration;
 
 /**
  * @author w.vela
  */
-public class AccessCounter {
+public class AccessCounter implements Duration {
 
     private final AtomicLong requestKeyCount = new AtomicLong();
     private final AtomicLong hitKeyCount = new AtomicLong();
@@ -20,7 +23,14 @@ public class AccessCounter {
     private final AtomicLong setCount = new AtomicLong();
     private final AtomicLong setCost = new AtomicLong();
 
-    private final long resetTime = System.currentTimeMillis();
+    private long duration;;
+
+    /**
+     * @param duration
+     */
+    public AccessCounter(long duration) {
+        this.duration = duration;
+    }
 
     public long getRequestKeyCount() {
         return requestKeyCount.get();
@@ -46,10 +56,6 @@ public class AccessCounter {
         return setCount.get();
     }
 
-    public long getResetTime() {
-        return resetTime;
-    }
-
     public void statsGet(long getCost, long hitCount, long requestCount) {
         this.getCost.addAndGet(getCost);
         this.hitKeyCount.addAndGet(hitCount);
@@ -62,8 +68,24 @@ public class AccessCounter {
         this.setCount.incrementAndGet();
     }
 
+    /* (non-Javadoc)
+     * @see com.github.phantomthief.stats.n.counter.Duration#duration()
+     */
+    @Override
+    public long duration() {
+        return duration;
+    }
+
+    /* (non-Javadoc)
+     * @see com.github.phantomthief.stats.n.counter.Duration#setDuration(long)
+     */
+    @Override
+    public void setDuration(long duration) {
+        this.duration = duration;
+    }
+
     @Override
     public String toString() {
-        return ToStringBuilder.reflectionToString(this);
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }

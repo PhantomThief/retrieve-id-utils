@@ -19,9 +19,10 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 
-import com.github.phantomthief.stats.SingleStatsHelper;
+import com.github.phantomthief.stats.n.DurationStats;
+import com.github.phantomthief.stats.n.counter.Duration;
+import com.github.phantomthief.stats.n.impl.SimpleDurationStats;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 
@@ -36,7 +37,7 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
     private final ConcurrentMap<K, LoadingHolder<K, V>> currentLoading = new ConcurrentHashMap<>();
     private final long waitOtherLoadingTimeout;
     private final Function<Collection<K>, Map<K, V>> loader;
-    private final SingleStatsHelper<LoadingMergeStats> stats;
+    private final DurationStats<LoadingMergeStats> stats;
     private final String name;
 
     /**
@@ -47,9 +48,7 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
             boolean enableStats, String name) {
         this.waitOtherLoadingTimeout = waitOtherLoadingTimeout;
         if (enableStats) {
-            this.stats = SingleStatsHelper.<LoadingMergeStats> newBuilder() //
-                    .setCounterReset(LoadingMergeStats.resetter()) //
-                    .build();
+            this.stats = SimpleDurationStats.newBuilder().build(LoadingMergeStats::new);
             this.loader = wrapStats(stats, loader);
         } else {
             this.stats = null;
@@ -63,15 +62,14 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
         return name;
     }
 
-    private Function<Collection<K>, Map<K, V>> wrapStats(SingleStatsHelper<LoadingMergeStats> stats,
+    private Function<Collection<K>, Map<K, V>> wrapStats(DurationStats<LoadingMergeStats> stats,
             Function<Collection<K>, Map<K, V>> inner) {
         return keys -> {
             Stopwatch stopwatch = Stopwatch.createStarted();
             try {
                 return inner.apply(keys);
             } finally {
-                stats.stats(
-                        LoadingMergeStats.load(stopwatch.stop().elapsed(TimeUnit.MILLISECONDS)));
+                stats.stat(LoadingMergeStats.load(stopwatch.stop().elapsed(TimeUnit.MILLISECONDS)));
             }
         };
     }
@@ -123,7 +121,7 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
                 }
             }
             if (stats != null) {
-                stats.stats(LoadingMergeStats.merge(otherLoading.size(),
+                stats.stat(LoadingMergeStats.merge(otherLoading.size(),
                         stopwatch.stop().elapsed(TimeUnit.MILLISECONDS)));
             }
             if (!remainedKeys.isEmpty()) {
@@ -131,7 +129,7 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
                     logger.debug("found timeout retrieve ids:{}", remainedKeys);
                 }
                 if (stats != null) {
-                    stats.stats(LoadingMergeStats.timeout());
+                    stats.stat(LoadingMergeStats.timeout());
                 }
                 finalResult.putAll(loader.apply(remainedKeys));
             }
@@ -148,7 +146,7 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
                 }
             });
             if (stats != null) {
-                stats.stats(LoadingMergeStats.merge(otherLoading.size(),
+                stats.stat(LoadingMergeStats.merge(otherLoading.size(),
                         stopwatch.stop().elapsed(TimeUnit.MILLISECONDS)));
             }
         }
@@ -236,17 +234,21 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
         return new Builder<>();
     }
 
-    public static final class LoadingMergeStats {
+    public static final class LoadingMergeStats implements Duration {
 
         private final AtomicLong loadCount = new AtomicLong();
         private final AtomicLong mergedKeys = new AtomicLong();
         private final AtomicLong loadCost = new AtomicLong();
         private final AtomicLong mergeWait = new AtomicLong();
         private final AtomicLong timeoutCount = new AtomicLong();
-        private final long resetTime = System.currentTimeMillis();
 
-        public static UnaryOperator<LoadingMergeStats> resetter() {
-            return old -> new LoadingMergeStats();
+        private long duration;
+
+        /**
+         * @param duration
+         */
+        public LoadingMergeStats(long duration) {
+            this.duration = duration;
         }
 
         private void doLoad(long cost) {
@@ -261,10 +263,6 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
 
         private void doTimeout() {
             timeoutCount.incrementAndGet();
-        }
-
-        public long getResetTime() {
-            return resetTime;
         }
 
         public long getLoadCount() {
@@ -298,9 +296,25 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
         public static Consumer<LoadingMergeStats> timeout() {
             return counter -> counter.doTimeout();
         }
+
+        /* (non-Javadoc)
+         * @see com.github.phantomthief.stats.n.counter.Duration#duration()
+         */
+        @Override
+        public long duration() {
+            return duration;
+        }
+
+        /* (non-Javadoc)
+         * @see com.github.phantomthief.stats.n.counter.Duration#setDuration(long)
+         */
+        @Override
+        public void setDuration(long duration) {
+            this.duration = duration;
+        }
     }
 
-    public SingleStatsHelper<LoadingMergeStats> getStats() {
-        return stats;
+    public Map<Long, LoadingMergeStats> getStats() {
+        return stats.getStats();
     }
 }

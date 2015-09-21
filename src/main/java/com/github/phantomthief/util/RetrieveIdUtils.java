@@ -15,7 +15,7 @@ import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
 
-import com.github.phantomthief.stats.StatsHelper;
+import com.github.phantomthief.stats.n.MultiDurationStats;
 import com.github.phantomthief.tuple.Tuple;
 import com.github.phantomthief.tuple.TwoTuple;
 import com.google.common.collect.Maps;
@@ -39,15 +39,15 @@ public final class RetrieveIdUtils {
     }
 
     public static <K, V> Map<K, V> get(Collection<K> keys, List<IMultiDataAccess<K, V>> list,
-            StatsHelper<String, AccessCounter> statsHelper) {
+            MultiDurationStats<String, AccessCounter> statsMap) {
         Map<K, V> result = Maps.newHashMapWithExpectedSize(keys.size());
-        accessCollection(keys, result, list.iterator(), statsHelper);
+        accessCollection(keys, result, list.iterator(), statsMap);
         return result;
     }
 
     private static <K, V> void accessCollection(final Collection<K> sourceIds,
             final Map<K, V> result, final Iterator<IMultiDataAccess<K, V>> iterator,
-            StatsHelper<String, AccessCounter> statsHelper) {
+            MultiDurationStats<String, AccessCounter> statsMap) {
 
         if (iterator.hasNext() && CollectionUtils.isNotEmpty(sourceIds)) {
             final IMultiDataAccess<K, V> dao = iterator.next();
@@ -55,8 +55,8 @@ public final class RetrieveIdUtils {
             final Map<K, V> retreivedModels = dao.get(sourceIds).entrySet().stream()
                     .filter(e -> e.getValue() != null)
                     .collect(toMap(Entry::getKey, Entry::getValue));
-            if (statsHelper != null && dao.getName() != null) {
-                statsHelper.stats(dao.getName(), c -> c.statsGet((System.currentTimeMillis() - s),
+            if (statsMap != null && dao.getName() != null) {
+                statsMap.stat(dao.getName(), c -> c.statsGet((System.currentTimeMillis() - s),
                         retreivedModels.size(), sourceIds.size()));
             }
 
@@ -69,13 +69,13 @@ public final class RetrieveIdUtils {
                 final Collection<K> nextIds = allKeysReady.second;
 
                 // 本级要把上级处理完的缓存住
-                accessCollection(nextIds, result, iterator, statsHelper);
+                accessCollection(nextIds, result, iterator, statsMap);
                 Map<K, V> dataToSet = subtractByKey(result, retreivedModels);
                 if (!dataToSet.isEmpty()) {
                     long t = System.currentTimeMillis();
                     dao.set(dataToSet);
-                    if (statsHelper != null && dao.getName() != null) {
-                        statsHelper.stats(dao.getName(),
+                    if (statsMap != null && dao.getName() != null) {
+                        statsMap.stat(dao.getName(),
                                 a -> a.statsSet((System.currentTimeMillis() - t)));
                     }
                 }
