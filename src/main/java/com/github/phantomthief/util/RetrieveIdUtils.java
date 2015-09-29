@@ -22,9 +22,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 /**
- * @author w.vela <vela@longbeach-inc.com>
- *
- * @date 2014年4月9日 下午3:19:10
+ * @author w.vela
  */
 public final class RetrieveIdUtils {
 

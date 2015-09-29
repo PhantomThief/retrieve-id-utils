@@ -5,8 +5,6 @@ package com.github.phantomthief.tuple;
 
 /**
  * @author w.vela
- * 
- * @Date Feb 28, 2011 4:58:07 PM
  */
 public class TwoTuple<A, B> {
 

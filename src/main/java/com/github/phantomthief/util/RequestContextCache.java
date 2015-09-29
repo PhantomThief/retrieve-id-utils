@@ -25,9 +25,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import com.google.common.collect.Maps;
 
 /**
- * @author w.vela <vela@longbeach-inc.com>
- *
- * @date 2014年4月11日 下午4:20:24
+ * @author w.vela
  */
 public class RequestContextCache<K, V> extends RequestContextHolder
                                 implements IMultiDataAccess<K, V> {
@@ -98,7 +96,6 @@ public class RequestContextCache<K, V> extends RequestContextHolder
      * {@link com.github.phantomthief.util.RequestContextCache#get(Collection)}
      * 
      * @param key
-     * @return
      */
     public V get(K key) {
         Map<K, V> thisCache;

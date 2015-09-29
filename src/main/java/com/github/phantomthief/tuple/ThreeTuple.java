@@ -5,8 +5,6 @@ package com.github.phantomthief.tuple;
 
 /**
  * @author w.vela
- * 
- * @Date Feb 28, 2011 4:59:03 PM
  */
 public class ThreeTuple<A, B, C> extends TwoTuple<A, B> {
 

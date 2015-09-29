@@ -7,6 +7,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
+/**
+ * @author w.vela
+ */
 public interface IMultiDataAccess<K, V> {
 
     public default String getName() {

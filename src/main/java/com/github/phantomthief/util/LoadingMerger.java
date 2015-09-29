@@ -3,6 +3,10 @@
  */
 package com.github.phantomthief.util;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.slf4j.LoggerFactory.getLogger;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,7 +16,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -23,7 +26,6 @@ import java.util.function.Function;
 import com.github.phantomthief.stats.n.DurationStats;
 import com.github.phantomthief.stats.n.counter.Duration;
 import com.github.phantomthief.stats.n.impl.SimpleDurationStats;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 
 /**
@@ -32,7 +34,7 @@ import com.google.common.base.Stopwatch;
  */
 public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
 
-    private static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(LoadingMerger.class);
+    private static org.slf4j.Logger logger = getLogger(LoadingMerger.class);
 
     private final ConcurrentMap<K, LoadingHolder<K, V>> currentLoading = new ConcurrentHashMap<>();
     private final long waitOtherLoadingTimeout;
@@ -97,6 +99,9 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
             needLoadKeys.forEach(currentLoading::remove);
             latch.countDown();
         }
+        if (logger.isDebugEnabled()) {
+            logger.debug("found other to load:{}", otherLoading.keySet());
+        }
         Map<K, V> finalResult = new HashMap<>(result);
         if (waitOtherLoadingTimeout > 0) {
             Stopwatch stopwatch = Stopwatch.createStarted();
@@ -107,29 +112,37 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
                 LoadingHolder<K, V> holder = entry.getValue();
                 long s = System.currentTimeMillis();
                 try {
-                    V v = holder.get(remained, TimeUnit.MILLISECONDS);
+                    V v = holder.get(remained, MILLISECONDS);
                     if (v != null) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("found other already get for key:{}->{}", key, v);
+                        }
                         finalResult.put(key, v);
                     }
-                } catch (Exception e) {
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } catch (TimeoutException e) {
+                    if (stats != null) {
+                        stats.stat(LoadingMergeStats.timeout());
+                    }
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("found timeout retrieve id:{}", key);
+                    }
+                    remainedKeys.add(key);
+                } catch (Throwable e) {
+                    remainedKeys.add(key);
                     logger.error("Ops.", e);
                 }
                 s = System.currentTimeMillis() - s;
                 remained -= s;
-                if (remained <= 0) {
-                    remainedKeys.add(key);
-                }
             }
             if (stats != null) {
                 stats.stat(LoadingMergeStats.merge(otherLoading.size(),
-                        stopwatch.stop().elapsed(TimeUnit.MILLISECONDS)));
+                        stopwatch.stop().elapsed(MILLISECONDS)));
             }
             if (!remainedKeys.isEmpty()) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("found timeout retrieve ids:{}", remainedKeys);
-                }
-                if (stats != null) {
-                    stats.stat(LoadingMergeStats.timeout());
+                    logger.debug("found timeout retrieve ids:{}, ready to get sync.", remainedKeys);
                 }
                 finalResult.putAll(loader.apply(remainedKeys));
             }
@@ -185,15 +198,17 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
             throw new UnsupportedOperationException();
         }
 
-        public V get() throws InterruptedException, ExecutionException {
+        public V get() throws InterruptedException {
             latch.await();
             return result.get(key);
         }
 
-        public V get(long timeout, TimeUnit unit)
-                throws InterruptedException, ExecutionException, TimeoutException {
-            latch.await(timeout, unit);
-            return result.get(key);
+        public V get(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
+            if (latch.await(timeout, unit)) {
+                return result.get(key);
+            } else {
+                throw new TimeoutException();
+            }
         }
     }
 
@@ -225,7 +240,7 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
         }
 
         public LoadingMerger<K, V> build() {
-            Preconditions.checkNotNull(loader);
+            checkNotNull(loader);
             return new LoadingMerger<>(waitOtherLoadingTimeout, loader, enableStats, name);
         }
     }

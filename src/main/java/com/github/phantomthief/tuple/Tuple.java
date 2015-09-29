@@ -7,8 +7,6 @@ package com.github.phantomthief.tuple;
  * @author w.vela
  * 
  *         多元组的工厂方法
- * 
- * @Date Feb 28, 2011 5:00:27 PM
  */
 public final class Tuple {
 
