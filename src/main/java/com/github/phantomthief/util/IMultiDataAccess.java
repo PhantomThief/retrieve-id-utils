@@ -12,6 +12,7 @@ import java.util.Map;
  */
 public interface IMultiDataAccess<K, V> {
 
+    @Deprecated
     public default String getName() {
         return null;
     }
