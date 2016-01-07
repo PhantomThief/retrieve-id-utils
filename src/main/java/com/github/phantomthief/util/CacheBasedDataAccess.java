@@ -15,7 +15,6 @@ import com.google.common.cache.CacheBuilder;
 public class CacheBasedDataAccess<K, V> implements IMultiDataAccess<K, V> {
 
     private final Cache<K, V> cache;
-    private final String name;
 
     public CacheBasedDataAccess() {
         this(CacheBuilder.newBuilder().weakKeys().weakValues().build());
@@ -25,21 +24,7 @@ public class CacheBasedDataAccess<K, V> implements IMultiDataAccess<K, V> {
      * @param cache
      */
     public CacheBasedDataAccess(Cache<K, V> cache) {
-        this(CacheBuilder.newBuilder().weakKeys().weakValues().build(), null);
-    }
-
-    /**
-     * @param cache
-     * @param name
-     */
-    public CacheBasedDataAccess(Cache<K, V> cache, String name) {
         this.cache = cache;
-        this.name = name;
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 
     @Override

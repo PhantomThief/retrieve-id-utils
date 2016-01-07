@@ -12,15 +12,10 @@ import java.util.Map;
  */
 public interface IMultiDataAccess<K, V> {
 
-    @Deprecated
-    public default String getName() {
-        return null;
-    }
-
-    public default Map<K, V> get(Collection<K> keys) {
+    default Map<K, V> get(Collection<K> keys) {
         return Collections.emptyMap();
     }
 
-    public default void set(Map<K, V> dataMap) {
+    default void set(Map<K, V> dataMap) {
     }
 }

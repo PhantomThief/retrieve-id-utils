@@ -28,11 +28,6 @@ public class TestRetrieveIdUtils {
                 new IMultiDataAccess<Integer, String>() {
 
                     @Override
-                    public String getName() {
-                        return "first one";
-                    }
-
-                    @Override
                     public Map<Integer, String> get(Collection<Integer> keys) {
                         return firstGet(keys);
                     }
@@ -43,11 +38,6 @@ public class TestRetrieveIdUtils {
                     }
                 }, //
                 new IMultiDataAccess<Integer, String>() {
-
-                    @Override
-                    public String getName() {
-                        return "second one";
-                    }
 
                     @Override
                     public Map<Integer, String> get(Collection<Integer> keys) {

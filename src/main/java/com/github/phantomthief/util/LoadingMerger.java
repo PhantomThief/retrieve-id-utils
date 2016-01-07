@@ -32,22 +32,14 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
     private final ConcurrentMap<K, LoadingHolder<K, V>> currentLoading = new ConcurrentHashMap<>();
     private final long waitOtherLoadingTimeout;
     private final Function<Collection<K>, Map<K, V>> loader;
-    private final String name;
 
     /**
      * @param waitOtherLoadingTimeout
      * @param loader
      */
-    private LoadingMerger(long waitOtherLoadingTimeout, Function<Collection<K>, Map<K, V>> loader,
-            String name) {
+    private LoadingMerger(long waitOtherLoadingTimeout, Function<Collection<K>, Map<K, V>> loader) {
         this.waitOtherLoadingTimeout = waitOtherLoadingTimeout;
         this.loader = loader;
-        this.name = name;
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 
     @Override
@@ -177,12 +169,6 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
 
         private long waitOtherLoadingTimeout;
         private Function<Collection<K>, Map<K, V>> loader;
-        private String name;
-
-        public Builder<K, V> name(String name) {
-            this.name = name;
-            return this;
-        }
 
         public Builder<K, V> timeout(long timeout, TimeUnit unit) {
             this.waitOtherLoadingTimeout = unit.toMillis(timeout);
@@ -196,7 +182,7 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
 
         public LoadingMerger<K, V> build() {
             checkNotNull(loader);
-            return new LoadingMerger<>(waitOtherLoadingTimeout, loader, name);
+            return new LoadingMerger<>(waitOtherLoadingTimeout, loader);
         }
     }
 
