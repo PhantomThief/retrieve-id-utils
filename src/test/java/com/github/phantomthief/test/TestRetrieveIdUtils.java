@@ -12,9 +12,6 @@ import java.util.Map.Entry;
 
 import org.junit.Test;
 
-import com.github.phantomthief.stats.n.MultiDurationStats;
-import com.github.phantomthief.stats.n.impl.SimpleDurationStats;
-import com.github.phantomthief.util.AccessCounter;
 import com.github.phantomthief.util.IMultiDataAccess;
 import com.github.phantomthief.util.RetrieveIdUtils;
 
@@ -25,9 +22,6 @@ public class TestRetrieveIdUtils {
 
     @Test
     public void test() {
-        MultiDurationStats<String, AccessCounter> statsMap = SimpleDurationStats.newBuilder()
-                .buildMulti(AccessCounter::new);
-
         List<Integer> ids = Arrays.asList(1, 2, 3, 4, 5);
         Map<Integer, String> firstSet = new HashMap<>();
         Map<Integer, String> result = RetrieveIdUtils.get(ids, Arrays.asList( //
@@ -60,20 +54,18 @@ public class TestRetrieveIdUtils {
                         return secondGet(keys);
                     }
 
-                }), statsMap);
+                }));
         for (Integer id : ids) {
             if (id < 4) {
-                assert(("a" + id).equals(result.get(id)));
+                assert (("a" + id).equals(result.get(id)));
             } else {
-                assert(!result.containsKey(id));
+                assert (!result.containsKey(id));
             }
         }
         for (Entry<Integer, String> entry : firstSet.entrySet()) {
-            assert(entry.getKey() < 4);
-            assert(("a" + entry.getKey()).equals(entry.getValue()));
+            assert (entry.getKey() < 4);
+            assert (("a" + entry.getKey()).equals(entry.getValue()));
         }
-
-        System.out.println(statsMap.getStats());
     }
 
     private Map<Integer, String> firstGet(Collection<Integer> ids) {
