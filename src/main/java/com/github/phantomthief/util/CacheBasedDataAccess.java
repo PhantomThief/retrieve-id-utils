@@ -3,11 +3,12 @@
  */
 package com.github.phantomthief.util;
 
+import static com.google.common.cache.CacheBuilder.newBuilder;
+
 import java.util.Collection;
 import java.util.Map;
 
 import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 
 /**
  * @author w.vela
@@ -17,7 +18,7 @@ public class CacheBasedDataAccess<K, V> implements IMultiDataAccess<K, V> {
     private final Cache<K, V> cache;
 
     public CacheBasedDataAccess() {
-        this(CacheBuilder.newBuilder().weakKeys().weakValues().build());
+        this(newBuilder().weakKeys().weakValues().build());
     }
 
     /**

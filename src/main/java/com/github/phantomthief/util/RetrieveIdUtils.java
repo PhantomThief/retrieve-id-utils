@@ -3,10 +3,13 @@
  */
 package com.github.phantomthief.util;
 
+import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
+import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
+import static java.lang.Math.max;
+import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toMap;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -17,8 +20,6 @@ import org.apache.commons.collections4.CollectionUtils;
 
 import com.github.phantomthief.tuple.Tuple;
 import com.github.phantomthief.tuple.TwoTuple;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 /**
  * @author w.vela
@@ -28,11 +29,11 @@ public final class RetrieveIdUtils {
     private static final int MIN_INITIAL_CAPACITY = 16;
 
     public static <K, V> V get(K key, List<IMultiDataAccess<K, V>> list) {
-        return get(Collections.singleton(key), list).get(key);
+        return get(singleton(key), list).get(key);
     }
 
     public static <K, V> Map<K, V> get(Collection<K> keys, List<IMultiDataAccess<K, V>> list) {
-        Map<K, V> result = Maps.newHashMapWithExpectedSize(keys.size());
+        Map<K, V> result = newHashMapWithExpectedSize(keys.size());
         accessCollection(keys, result, list.iterator());
         return result;
     }
@@ -46,8 +47,7 @@ public final class RetrieveIdUtils {
                     .filter(e -> e.getValue() != null)
                     .collect(toMap(Entry::getKey, Entry::getValue));
 
-            TwoTuple<Boolean, Collection<K>> allKeysReady = allKeysReady(retreivedModels,
-                    sourceIds);
+            TwoTuple<Boolean, Collection<K>> allKeysReady = allKeysReady(retreivedModels, sourceIds);
             if (!allKeysReady.first) {
                 // 不够，那么需要调用下级缓存
 
@@ -68,8 +68,8 @@ public final class RetrieveIdUtils {
     private static <K, V> TwoTuple<Boolean, Collection<K>> allKeysReady(Map<K, V> dataMap,
             Collection<K> allKeys) {
         boolean allReady = true;
-        Set<K> leftKeys = Sets.newHashSetWithExpectedSize(
-                Math.max(MIN_INITIAL_CAPACITY, allKeys.size() - dataMap.size()));
+        Set<K> leftKeys = newHashSetWithExpectedSize(max(MIN_INITIAL_CAPACITY, allKeys.size()
+                - dataMap.size()));
         for (K key : allKeys) {
             if (dataMap.get(key) == null) {
                 allReady = false;
@@ -80,12 +80,10 @@ public final class RetrieveIdUtils {
     }
 
     private static <K, V> Map<K, V> subtractByKey(Map<K, V> a, Map<K, V> b) {
-        Map<K, V> result = Maps.newHashMapWithExpectedSize(a.size());
-        for (Entry<K, V> entry : a.entrySet()) {
-            if (b.get(entry.getKey()) == null) {
-                result.put(entry.getKey(), entry.getValue());
-            }
-        }
+        Map<K, V> result = newHashMapWithExpectedSize(a.size());
+        a.entrySet().stream()
+                .filter(entry -> b.get(entry.getKey()) == null)
+                .forEach(entry -> result.put(entry.getKey(), entry.getValue()));
         return result;
     }
 

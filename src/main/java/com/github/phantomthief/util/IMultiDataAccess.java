@@ -3,8 +3,9 @@
  */
 package com.github.phantomthief.util;
 
+import static java.util.Collections.emptyMap;
+
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -13,7 +14,7 @@ import java.util.Map;
 public interface IMultiDataAccess<K, V> {
 
     default Map<K, V> get(Collection<K> keys) {
-        return Collections.emptyMap();
+        return emptyMap();
     }
 
     default void set(Map<K, V> dataMap) {

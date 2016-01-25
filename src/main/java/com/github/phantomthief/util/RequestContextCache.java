@@ -27,24 +27,21 @@ import com.google.common.collect.Maps;
 /**
  * @author w.vela
  */
-public class RequestContextCache<K, V> extends RequestContextHolder
-                                implements IMultiDataAccess<K, V> {
+public class RequestContextCache<K, V> extends RequestContextHolder implements
+                                                                   IMultiDataAccess<K, V> {
 
     private static final String PREFIX = "_c";
 
     private static final int THREAD_LOCAL_NAME_LENGTH = 2;
 
     private static final Map<String, RequestContextCache<?, ?>> ALL_NAMES = new HashMap<>();
-
-    private String uniqueNameForRequestContext;
-
     private final String declareLocation;
     private final Set<Class<?>> valueTypes = Collections.synchronizedSet(new HashSet<>());
-
     private final AtomicLong request = new AtomicLong();
     private final AtomicLong hit = new AtomicLong();
     private final AtomicLong set = new AtomicLong();
     private final AtomicLong remove = new AtomicLong();
+    private String uniqueNameForRequestContext;
 
     public RequestContextCache() {
         synchronized (RequestContextCache.class) {
@@ -64,12 +61,18 @@ public class RequestContextCache<K, V> extends RequestContextHolder
         declareLocation = location;
     }
 
+    public static List<RequestContextCache<?, ?>.CacheStats> getStats() {
+        synchronized (RequestContextCache.class) {
+            return ALL_NAMES.values().stream().map(i -> i.new CacheStats()).collect(toList());
+        }
+    }
+
     protected int locationCallStackDepth() {
         return 2;
     }
 
     @SuppressWarnings("unchecked")
-    private final Map<K, V> init() {
+    private Map<K, V> init() {
         try {
             RequestAttributes attrs = currentRequestAttributes();
             ConcurrentHashMap<K, V> concurrentHashMap = (ConcurrentHashMap<K, V>) attrs
@@ -94,8 +97,6 @@ public class RequestContextCache<K, V> extends RequestContextHolder
     /**
      * 请尽量使用
      * {@link com.github.phantomthief.util.RequestContextCache#get(Collection)}
-     * 
-     * @param key
      */
     public V get(K key) {
         Map<K, V> thisCache;
@@ -140,9 +141,7 @@ public class RequestContextCache<K, V> extends RequestContextHolder
     /**
      * 请尽量使用
      * {@link com.github.phantomthief.util.RequestContextCache#set(Map)}
-     * 
-     * @param key
-     * @param value
+     *
      */
     public void set(K key, V value) {
         Map<K, V> thisMap = init();
@@ -191,12 +190,6 @@ public class RequestContextCache<K, V> extends RequestContextHolder
 
         public Collection<Class<?>> getValueTypes() {
             return valueTypes;
-        }
-    }
-
-    public static final List<RequestContextCache<?, ?>.CacheStats> getStats() {
-        synchronized (RequestContextCache.class) {
-            return ALL_NAMES.values().stream().map(i -> i.new CacheStats()).collect(toList());
         }
     }
 

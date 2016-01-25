@@ -3,12 +3,13 @@
  */
 package com.github.phantomthief.util;
 
+import static com.google.common.cache.CacheBuilder.newBuilder;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 
 /**
  * 
@@ -16,7 +17,7 @@ import com.google.common.cache.CacheBuilder;
  */
 public final class GlobalCache<K, V> implements IMultiDataAccess<K, V> {
 
-    private final Cache<K, V> cache = CacheBuilder.newBuilder().weakKeys().weakValues().build();
+    private final Cache<K, V> cache = newBuilder().weakKeys().weakValues().build();
 
     @Override
     public Map<K, V> get(Collection<K> keys) {

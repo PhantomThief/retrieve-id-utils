@@ -15,8 +15,7 @@ import com.google.common.collect.Maps;
 /**
  * @author w.vela
  */
-public class PairKeyRequestContextCache<K1, K2, V>
-        extends RequestContextCache<TwoTuple<K1, K2>, V> {
+public class PairKeyRequestContextCache<K1, K2, V> extends RequestContextCache<TwoTuple<K1, K2>, V> {
 
     public PairKeyRequestContextCache() {
         super();

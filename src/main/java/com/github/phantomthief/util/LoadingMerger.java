@@ -4,6 +4,8 @@
 package com.github.phantomthief.util;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.System.currentTimeMillis;
+import static java.lang.Thread.currentThread;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -21,25 +23,27 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 
+import org.slf4j.Logger;
+
 /**
  * 
  * @author w.vela
  */
 public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
 
-    private static org.slf4j.Logger logger = getLogger(LoadingMerger.class);
+    private static Logger logger = getLogger(LoadingMerger.class);
 
     private final ConcurrentMap<K, LoadingHolder<K, V>> currentLoading = new ConcurrentHashMap<>();
     private final long waitOtherLoadingTimeout;
     private final Function<Collection<K>, Map<K, V>> loader;
 
-    /**
-     * @param waitOtherLoadingTimeout
-     * @param loader
-     */
     private LoadingMerger(long waitOtherLoadingTimeout, Function<Collection<K>, Map<K, V>> loader) {
         this.waitOtherLoadingTimeout = waitOtherLoadingTimeout;
         this.loader = loader;
+    }
+
+    public static <K, V> Builder<K, V> newBuilder() {
+        return new Builder<>();
     }
 
     @Override
@@ -75,7 +79,7 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
             for (Entry<K, LoadingHolder<K, V>> entry : otherLoading.entrySet()) {
                 K key = entry.getKey();
                 LoadingHolder<K, V> holder = entry.getValue();
-                long s = System.currentTimeMillis();
+                long s = currentTimeMillis();
                 try {
                     V v = holder.get(remained, MILLISECONDS);
                     if (v != null) {
@@ -85,7 +89,7 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
                         finalResult.put(key, v);
                     }
                 } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+                    currentThread().interrupt();
                 } catch (TimeoutException e) {
                     if (logger.isDebugEnabled()) {
                         logger.debug("found timeout retrieve id:{}", key);
@@ -95,7 +99,7 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
                     remainedKeys.add(key);
                     logger.error("Ops.", e);
                 }
-                s = System.currentTimeMillis() - s;
+                s = currentTimeMillis() - s;
                 remained -= s;
             }
             if (!remainedKeys.isEmpty()) {
@@ -121,14 +125,11 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
 
     private static final class LoadingHolder<K, V> implements Future<V> {
 
-        private final Thread thread = Thread.currentThread();
+        private final Thread thread = currentThread();
         private final CountDownLatch latch;
         private final K key;
         private final Map<K, V> result;
 
-        /**
-         * @param task
-         */
         public LoadingHolder(CountDownLatch latch, K key, Map<K, V> result) {
             this.latch = latch;
             this.key = key;
@@ -136,7 +137,7 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
         }
 
         boolean isCurrent() {
-            return Thread.currentThread() == thread;
+            return currentThread() == thread;
         }
 
         public boolean isCancelled() {
@@ -184,9 +185,5 @@ public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
             checkNotNull(loader);
             return new LoadingMerger<>(waitOtherLoadingTimeout, loader);
         }
-    }
-
-    public static final <K, V> Builder<K, V> newBuilder() {
-        return new Builder<>();
     }
 }

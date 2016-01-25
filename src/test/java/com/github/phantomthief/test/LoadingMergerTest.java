@@ -34,9 +34,9 @@ import com.google.common.util.concurrent.MoreExecutors;
  */
 public class LoadingMergerTest {
 
+    private final AtomicInteger slowLoad = new AtomicInteger();
     private List<Integer> loadKeys = Collections.synchronizedList(new ArrayList<>());
     private List<Integer> slowLoadKeys = Collections.synchronizedList(new ArrayList<>());
-    private final AtomicInteger slowLoad = new AtomicInteger();
 
     @Test
     public void testMerge() throws Exception {
@@ -94,22 +94,26 @@ public class LoadingMergerTest {
                 .loader(this::slowLoad) //
                 .build();
         ExecutorService executorService = Executors.newFixedThreadPool(10);
-        executorService.execute(() -> {
-            Map<Integer, String> result = loadingMerger.get(Arrays.asList(1, 2, 3, 10, 11, 12, 13));
-            assertEquals(result.size(), 7);
-            assertEquals(result.get(1), "1");
-            assertEquals(result.get(2), "2");
-            assertEquals(result.get(3), "3");
-            System.out.println("result:" + result);
-        });
-        executorService.execute(() -> {
-            Map<Integer, String> result = loadingMerger.get(Arrays.asList(2, 3, 4, 10, 11, 12, 13));
-            assertEquals(result.size(), 7);
-            assertEquals(result.get(2), "2");
-            assertEquals(result.get(3), "3");
-            assertEquals(result.get(4), "4");
-            System.out.println("result:" + result);
-        });
+        executorService
+                .execute(() -> {
+                    Map<Integer, String> result = loadingMerger.get(Arrays.asList(1, 2, 3, 10, 11,
+                            12, 13));
+                    assertEquals(result.size(), 7);
+                    assertEquals(result.get(1), "1");
+                    assertEquals(result.get(2), "2");
+                    assertEquals(result.get(3), "3");
+                    System.out.println("result:" + result);
+                });
+        executorService
+                .execute(() -> {
+                    Map<Integer, String> result = loadingMerger.get(Arrays.asList(2, 3, 4, 10, 11,
+                            12, 13));
+                    assertEquals(result.size(), 7);
+                    assertEquals(result.get(2), "2");
+                    assertEquals(result.get(3), "3");
+                    assertEquals(result.get(4), "4");
+                    System.out.println("result:" + result);
+                });
         executorService.execute(() -> {
             Map<Integer, String> result = loadingMerger.get(Arrays.asList(3, 4));
             assertEquals(result.size(), 2);
