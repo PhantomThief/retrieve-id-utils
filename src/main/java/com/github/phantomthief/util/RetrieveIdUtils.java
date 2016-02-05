@@ -3,6 +3,7 @@
  */
 package com.github.phantomthief.util;
 
+import static com.github.phantomthief.tuple.Tuple.tuple;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 import static java.lang.Math.max;
@@ -18,7 +19,6 @@ import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
 
-import com.github.phantomthief.tuple.Tuple;
 import com.github.phantomthief.tuple.TwoTuple;
 
 /**
@@ -76,7 +76,7 @@ public final class RetrieveIdUtils {
                 leftKeys.add(key);
             }
         }
-        return Tuple.<Boolean, Collection<K>> tuple(allReady, leftKeys);
+        return tuple(allReady, leftKeys);
     }
 
     private static <K, V> Map<K, V> subtractByKey(Map<K, V> a, Map<K, V> b) {

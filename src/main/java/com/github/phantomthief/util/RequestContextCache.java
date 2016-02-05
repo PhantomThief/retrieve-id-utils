@@ -3,10 +3,17 @@
  */
 package com.github.phantomthief.util;
 
+import static com.google.common.collect.Maps.filterKeys;
+import static java.lang.Thread.currentThread;
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.synchronizedSet;
+import static java.util.Collections.unmodifiableMap;
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+import static org.apache.commons.collections4.CollectionUtils.size;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -16,13 +23,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
-
-import com.google.common.collect.Maps;
 
 /**
  * @author w.vela
@@ -36,7 +39,7 @@ public class RequestContextCache<K, V> extends RequestContextHolder implements
 
     private static final Map<String, RequestContextCache<?, ?>> ALL_NAMES = new HashMap<>();
     private final String declareLocation;
-    private final Set<Class<?>> valueTypes = Collections.synchronizedSet(new HashSet<>());
+    private final Set<Class<?>> valueTypes = synchronizedSet(new HashSet<>());
     private final AtomicLong request = new AtomicLong();
     private final AtomicLong hit = new AtomicLong();
     private final AtomicLong set = new AtomicLong();
@@ -47,14 +50,14 @@ public class RequestContextCache<K, V> extends RequestContextHolder implements
         synchronized (RequestContextCache.class) {
             String uniqName;
             do {
-                uniqName = PREFIX + RandomStringUtils.randomAlphanumeric(THREAD_LOCAL_NAME_LENGTH);
+                uniqName = PREFIX + randomAlphanumeric(THREAD_LOCAL_NAME_LENGTH);
             } while (ALL_NAMES.containsKey(uniqName));
             ALL_NAMES.put(uniqName, this);
             uniqueNameForRequestContext = uniqName;
         }
         String location;
         try {
-            location = Thread.currentThread().getStackTrace()[locationCallStackDepth()].toString();
+            location = currentThread().getStackTrace()[locationCallStackDepth()].toString();
         } catch (Throwable e) {
             location = null;
         }
@@ -115,13 +118,13 @@ public class RequestContextCache<K, V> extends RequestContextHolder implements
     @Override
     public Map<K, V> get(Collection<K> keys) {
         Map<K, V> thisCache;
-        request.addAndGet(CollectionUtils.size(keys));
-        if (CollectionUtils.isNotEmpty(keys) && (thisCache = init()) != null) {
-            Map<K, V> map = Collections.unmodifiableMap(Maps.filterKeys(thisCache, keys::contains));
+        request.addAndGet(size(keys));
+        if (isNotEmpty(keys) && (thisCache = init()) != null) {
+            Map<K, V> map = unmodifiableMap(filterKeys(thisCache, keys::contains));
             hit.addAndGet(map.size());
             return map;
         } else {
-            return Collections.emptyMap();
+            return emptyMap();
         }
     }
 
@@ -130,10 +133,13 @@ public class RequestContextCache<K, V> extends RequestContextHolder implements
         Map<K, V> thisMap = init();
         if (thisMap != null) {
             if (MapUtils.isNotEmpty(dataMap)) {
-                set.addAndGet(CollectionUtils.size(dataMap));
+                set.addAndGet(size(dataMap));
                 thisMap.putAll(dataMap);
-                valueTypes.addAll(dataMap.values().stream().filter(Objects::nonNull)
-                        .map(Object::getClass).distinct().collect(toList()));
+                valueTypes.addAll(dataMap.values().stream() //
+                        .filter(Objects::nonNull) //
+                        .map(Object::getClass) //
+                        .distinct() //
+                        .collect(toList()));
             }
         }
     }
