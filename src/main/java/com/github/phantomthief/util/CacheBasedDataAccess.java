@@ -3,8 +3,6 @@
  */
 package com.github.phantomthief.util;
 
-import static com.google.common.cache.CacheBuilder.newBuilder;
-
 import java.util.Collection;
 import java.util.Map;
 
@@ -17,15 +15,12 @@ public class CacheBasedDataAccess<K, V> implements IMultiDataAccess<K, V> {
 
     private final Cache<K, V> cache;
 
-    public CacheBasedDataAccess() {
-        this(newBuilder().weakKeys().weakValues().build());
+    private CacheBasedDataAccess(Cache<K, V> cache) {
+        this.cache = cache;
     }
 
-    /**
-     * @param cache
-     */
-    public CacheBasedDataAccess(Cache<K, V> cache) {
-        this.cache = cache;
+    public static <K, V> IMultiDataAccess<K, V> of(Cache<K, V> cache) {
+        return new CacheBasedDataAccess<>(cache);
     }
 
     @Override
@@ -35,6 +30,10 @@ public class CacheBasedDataAccess<K, V> implements IMultiDataAccess<K, V> {
 
     @Override
     public void set(Map<K, V> dataMap) {
-        cache.putAll(dataMap);
+        if (dataMap != null) {
+            dataMap.entrySet().stream()
+                    .filter(entry -> entry.getKey() != null && entry.getValue() != null)
+                    .forEach(entry -> cache.put(entry.getKey(), entry.getValue()));
+        }
     }
 }

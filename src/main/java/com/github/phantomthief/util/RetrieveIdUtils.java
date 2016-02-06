@@ -9,6 +9,7 @@ import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 import static java.lang.Math.max;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toMap;
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -16,8 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import org.apache.commons.collections4.CollectionUtils;
 
 import com.github.phantomthief.tuple.TwoTuple;
 
@@ -41,7 +40,7 @@ public final class RetrieveIdUtils {
     private static <K, V> void accessCollection(final Collection<K> sourceIds,
             final Map<K, V> result, final Iterator<IMultiDataAccess<K, V>> iterator) {
 
-        if (iterator.hasNext() && CollectionUtils.isNotEmpty(sourceIds)) {
+        if (iterator.hasNext() && isNotEmpty(sourceIds)) {
             final IMultiDataAccess<K, V> dao = iterator.next();
             final Map<K, V> retreivedModels = dao.get(sourceIds).entrySet().stream()
                     .filter(e -> e.getValue() != null)
@@ -81,8 +80,7 @@ public final class RetrieveIdUtils {
 
     private static <K, V> Map<K, V> subtractByKey(Map<K, V> a, Map<K, V> b) {
         Map<K, V> result = newHashMapWithExpectedSize(a.size());
-        a.entrySet().stream()
-                .filter(entry -> b.get(entry.getKey()) == null)
+        a.entrySet().stream().filter(entry -> b.get(entry.getKey()) == null)
                 .forEach(entry -> result.put(entry.getKey(), entry.getValue()));
         return result;
     }

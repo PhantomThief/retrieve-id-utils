@@ -21,11 +21,6 @@ public class PairKeyRequestContextCache<K1, K2, V> extends RequestContextCache<T
         super();
     }
 
-    @Override
-    protected int locationCallStackDepth() {
-        return super.locationCallStackDepth() + 1;
-    }
-
     public V getMultiKey(K1 key1, K2 key2) {
         return get(tuple(key1, key2));
     }
