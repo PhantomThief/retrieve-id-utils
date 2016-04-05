@@ -29,7 +29,7 @@ public class RequestContextCache<K, V> extends RequestContextHolder implements
     private static final int THREAD_LOCAL_NAME_LENGTH = 2;
     private static final Map<String, RequestContextCache<?, ?>> ALL_NAMES = new HashMap<>();
 
-    /*private static volatile boolean enabled;*/
+    private static volatile boolean enabled;
 
     private String uniqueNameForRequestContext;
 
@@ -44,15 +44,15 @@ public class RequestContextCache<K, V> extends RequestContextHolder implements
         }
     }
 
-    /*public static void enable() {
+    public static void enable() {
         enabled = true;
-    }*/
+    }
 
     @SuppressWarnings("unchecked")
     private Map<K, V> init() {
-        /*if (!enabled) { // 性能优先,短路掉
+        if (!enabled) { // 性能优先,短路掉
             return null;
-        }*/
+        }
         try {
             RequestAttributes attrs = currentRequestAttributes();
             ConcurrentHashMap<K, V> concurrentHashMap = (ConcurrentHashMap<K, V>) attrs
