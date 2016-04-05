@@ -13,10 +13,17 @@ import java.util.Map;
  */
 public interface IMultiDataAccess<K, V> {
 
+    /**
+     * @param keys without null.
+     * @return map without null values.
+     */
     default Map<K, V> get(Collection<K> keys) {
         return emptyMap();
     }
 
+    /**
+     * @param dataMap without null values.
+     */
     default void set(Map<K, V> dataMap) {
     }
 }
