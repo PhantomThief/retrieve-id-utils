@@ -13,7 +13,7 @@ retrieve-id-utils [![Build Status](https://travis-ci.org/PhantomThief/retrieve-i
 <dependency>
     <groupId>com.github.phantomthief</groupId>
     <artifactId>retrieve-id-utils</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.5</version>
 </dependency>
 ```
 
