@@ -3,26 +3,22 @@
  */
 package com.github.phantomthief.util;
 
+import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
-import static java.util.stream.Collectors.toMap;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author w.vela
  */
 public final class RetrieveIdUtils {
 
-    public static <K, V> V get(K key, List<IMultiDataAccess<K, V>> list) {
+    public static <K, V> V get(K key, Collection<IMultiDataAccess<K, V>> list) {
         return get(singleton(key), list).get(key);
     }
 
@@ -31,21 +27,28 @@ public final class RetrieveIdUtils {
      *
      * @return map without null value.
      */
-    public static <K, V> Map<K, V> get(Collection<K> keys, List<IMultiDataAccess<K, V>> list) {
+    public static <K, V> Map<K, V> get(Collection<K> keys, Iterable<IMultiDataAccess<K, V>> list) {
         return getByIterator(keys, list.iterator());
     }
 
     private static <K, V> Map<K, V> getByIterator(Collection<K> keys,
             Iterator<IMultiDataAccess<K, V>> iterator) {
         if (!iterator.hasNext() || keys.isEmpty()) {
-            return Collections.emptyMap();
+            return emptyMap();
         }
 
         IMultiDataAccess<K, V> currentDao = iterator.next();
-        Map<K, V> currentResult = excludeNullValues(currentDao.get(keys));
-        Set<K> leftKeys = subtract(keys, currentResult.keySet());
-
-        Map<K, V> result = new HashMap<>(currentResult);
+        Map<K, V> originalResult = currentDao.get(keys);
+        Set<K> leftKeys = new HashSet<>();
+        Map<K, V> result = newHashMapWithExpectedSize(keys.size());
+        for (K key : keys) {
+            V value = originalResult.get(key);
+            if (value == null) {
+                leftKeys.add(key);
+            } else {
+                result.put(key, value);
+            }
+        }
 
         Map<K, V> lowerResult = getByIterator(leftKeys, iterator);
         if (!lowerResult.isEmpty()) {
@@ -54,14 +57,4 @@ public final class RetrieveIdUtils {
         }
         return result;
     }
-
-    private static <K, V> Map<K, V> excludeNullValues(Map<K, V> map) {
-        return map.entrySet().stream().filter(e -> e.getValue() != null)
-                .collect(toMap(Entry::getKey, Entry::getValue));
-    }
-
-    private static <K> Set<K> subtract(Collection<K> one, Set<K> another) {
-        return one.stream().filter(o -> !another.contains(o)).collect(Collectors.toSet());
-    }
-
 }
