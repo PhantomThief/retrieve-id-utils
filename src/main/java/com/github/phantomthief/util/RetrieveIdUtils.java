@@ -18,7 +18,7 @@ import java.util.Set;
  */
 public final class RetrieveIdUtils {
 
-    public static <K, V> V get(K key, Collection<IMultiDataAccess<K, V>> list) {
+    public static <K, V> V getOne(K key, Iterable<IMultiDataAccess<K, V>> list) {
         return get(singleton(key), list).get(key);
     }
 
