@@ -35,6 +35,22 @@ public interface IMultiDataAccess<K, V> {
         };
     }
 
+    static <K, V> IMultiDataAccess<K, V> with(Function<Collection<K>, Map<K, V>> getFunction,
+            Consumer<Map<K, V>> setFunction) {
+        return new IMultiDataAccess<K, V>() {
+
+            @Override
+            public Map<K, V> get(Collection<K> keys) {
+                return getFunction.apply(keys);
+            }
+
+            @Override
+            public void set(Map<K, V> dataMap) {
+                setFunction.accept(dataMap);
+            }
+        };
+    }
+
     /**
      * @param keys without null.
      * @return map without null values.
