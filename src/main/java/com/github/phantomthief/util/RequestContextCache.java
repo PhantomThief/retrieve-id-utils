@@ -22,8 +22,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 /**
  * @author w.vela
  */
-public class RequestContextCache<K, V> extends RequestContextHolder implements
-                                                                   IMultiDataAccess<K, V> {
+public class RequestContextCache<K, V> extends RequestContextHolder
+                                implements IMultiDataAccess<K, V> {
 
     private static final String PREFIX = "_c";
     private static final int THREAD_LOCAL_NAME_LENGTH = 2;
@@ -59,8 +59,8 @@ public class RequestContextCache<K, V> extends RequestContextHolder implements
                     .getAttribute(uniqueNameForRequestContext, SCOPE_REQUEST);
             if (concurrentHashMap == null) {
                 synchronized (attrs) {
-                    concurrentHashMap = (ConcurrentHashMap<K, V>) attrs.getAttribute(
-                            uniqueNameForRequestContext, SCOPE_REQUEST);
+                    concurrentHashMap = (ConcurrentHashMap<K, V>) attrs
+                            .getAttribute(uniqueNameForRequestContext, SCOPE_REQUEST);
                     if (concurrentHashMap == null) {
                         concurrentHashMap = new ConcurrentHashMap<>();
                         attrs.setAttribute(uniqueNameForRequestContext, concurrentHashMap,

@@ -51,11 +51,8 @@ public class PairKeyRequestContextCache<K1, K2, V> extends RequestContextCache<T
             @Override
             public void set(Map<K1, V> dataMap) {
                 Map<TwoTuple<K1, K2>, V> mapToSet = newHashMapWithExpectedSize(dataMap.size());
-                dataMap.entrySet()
-                        .stream()
-                        .filter(entry -> entry.getValue() != null)
-                        .forEach(
-                                entry -> mapToSet.put(tuple(entry.getKey(), key2), entry.getValue()));
+                dataMap.entrySet().stream().filter(entry -> entry.getValue() != null).forEach(
+                        entry -> mapToSet.put(tuple(entry.getKey(), key2), entry.getValue()));
                 PairKeyRequestContextCache.this.set(mapToSet);
             }
 
@@ -80,11 +77,8 @@ public class PairKeyRequestContextCache<K1, K2, V> extends RequestContextCache<T
             @Override
             public void set(Map<K2, V> dataMap) {
                 Map<TwoTuple<K1, K2>, V> mapToSet = newHashMapWithExpectedSize(dataMap.size());
-                dataMap.entrySet()
-                        .stream()
-                        .filter(entry -> entry.getValue() != null)
-                        .forEach(
-                                entry -> mapToSet.put(tuple(key1, entry.getKey()), entry.getValue()));
+                dataMap.entrySet().stream().filter(entry -> entry.getValue() != null).forEach(
+                        entry -> mapToSet.put(tuple(key1, entry.getKey()), entry.getValue()));
                 PairKeyRequestContextCache.this.set(mapToSet);
             }
         };
