@@ -13,7 +13,6 @@ import static org.springframework.web.context.request.RequestAttributes.SCOPE_RE
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.web.context.request.RequestAttributes;
@@ -55,20 +54,13 @@ public class RequestContextCache<K, V> extends RequestContextHolder
         }
         try {
             RequestAttributes attrs = currentRequestAttributes();
-            ConcurrentHashMap<K, V> concurrentHashMap = (ConcurrentHashMap<K, V>) attrs
-                    .getAttribute(uniqueNameForRequestContext, SCOPE_REQUEST);
-            if (concurrentHashMap == null) {
-                synchronized (attrs) {
-                    concurrentHashMap = (ConcurrentHashMap<K, V>) attrs
-                            .getAttribute(uniqueNameForRequestContext, SCOPE_REQUEST);
-                    if (concurrentHashMap == null) {
-                        concurrentHashMap = new ConcurrentHashMap<>();
-                        attrs.setAttribute(uniqueNameForRequestContext, concurrentHashMap,
-                                SCOPE_REQUEST);
-                    }
-                }
+            Map<K, V> map = (Map<K, V>) attrs.getAttribute(uniqueNameForRequestContext,
+                    SCOPE_REQUEST);
+            if (map == null) {
+                map = new HashMap<>();
+                attrs.setAttribute(uniqueNameForRequestContext, map, SCOPE_REQUEST);
             }
-            return concurrentHashMap;
+            return map;
         } catch (Throwable e) {
             return null;
         }
