@@ -25,7 +25,7 @@ public class RequestContextCache<K, V> extends RequestContextHolder
                                 implements IMultiDataAccess<K, V> {
 
     private static final String PREFIX = "_c";
-    private static final int THREAD_LOCAL_NAME_LENGTH = 4;
+    private static final int THREAD_LOCAL_NAME_LENGTH = 2;
     private static final Map<String, RequestContextCache<?, ?>> ALL_NAMES = new HashMap<>();
 
     private static volatile boolean enabled;
