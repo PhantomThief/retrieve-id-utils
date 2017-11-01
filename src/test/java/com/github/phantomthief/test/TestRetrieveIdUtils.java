@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.github.phantomthief.test;
 
 import java.util.Arrays;
@@ -10,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.github.phantomthief.util.IMultiDataAccess;
 import com.github.phantomthief.util.RetrieveIdUtils;
@@ -18,10 +15,10 @@ import com.github.phantomthief.util.RetrieveIdUtils;
 /**
  * @author w.vela
  */
-public class TestRetrieveIdUtils {
+class TestRetrieveIdUtils {
 
     @Test
-    public void test() {
+    void test() {
         List<Integer> ids = Arrays.asList(1, 2, 3, 4, 5);
         Map<Integer, String> firstSet = new HashMap<>();
         Map<Integer, String> result = RetrieveIdUtils.get(ids, Arrays.asList( //

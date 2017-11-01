@@ -1,7 +1,3 @@
-/**
-/**
- * 
- */
 package com.github.phantomthief.test;
 
 import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
@@ -10,8 +6,8 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,7 +20,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.RandomUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.github.phantomthief.util.LoadingMerger;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -32,14 +28,14 @@ import com.google.common.util.concurrent.MoreExecutors;
 /**
  * @author w.vela
  */
-public class LoadingMergerTest {
+class LoadingMergerTest {
 
     private final AtomicInteger slowLoad = new AtomicInteger();
     private List<Integer> loadKeys = Collections.synchronizedList(new ArrayList<>());
     private List<Integer> slowLoadKeys = Collections.synchronizedList(new ArrayList<>());
 
     @Test
-    public void testMerge() throws Exception {
+    void testMerge() {
         System.out.println("start to test normal load");
         LoadingMerger<Integer, String> loadingMerger = LoadingMerger.<Integer, String> newBuilder() //
                 .timeout(1, SECONDS) //
@@ -87,7 +83,7 @@ public class LoadingMergerTest {
     }
 
     @Test
-    public void testSlowMerge() throws Exception {
+    void testSlowMerge() {
         System.out.println("start to test slow load");
         LoadingMerger<Integer, String> loadingMerger = LoadingMerger.<Integer, String> newBuilder() //
                 .timeout(500, MILLISECONDS) //

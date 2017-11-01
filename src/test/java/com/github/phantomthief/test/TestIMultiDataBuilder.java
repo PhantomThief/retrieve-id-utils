@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.github.phantomthief.util.IMultiDataAccess;
 import com.github.phantomthief.util.RetrieveIdUtils;
@@ -16,10 +16,10 @@ import com.google.common.collect.ImmutableList;
  * @author w.vela
  * Created on 16/5/10.
  */
-public class TestIMultiDataBuilder {
+class TestIMultiDataBuilder {
 
     @Test
-    public void test() {
+    void test() {
         List<Integer> list = new ArrayList<>();
         RetrieveIdUtils
                 .get(list,
