@@ -9,7 +9,11 @@ import static org.springframework.web.context.request.RequestAttributes.SCOPE_RE
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.concurrent.GuardedBy;
 
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.web.context.request.RequestAttributes;
@@ -24,19 +28,20 @@ public class RequestContextCache<K, V> extends RequestContextHolder
 
     private static final String PREFIX = "_c";
     private static final int THREAD_LOCAL_NAME_LENGTH = 2;
-    private static final Map<String, RequestContextCache<?, ?>> ALL_NAMES = new HashMap<>();
+    @GuardedBy("self")
+    private static final Set<String> ALL_NAMES = new HashSet<>();
 
     private static volatile boolean enabled;
 
-    private String uniqueNameForRequestContext;
+    private final String uniqueNameForRequestContext;
 
     public RequestContextCache() {
-        synchronized (RequestContextCache.class) {
+        synchronized (ALL_NAMES) {
             String uniqName;
             do {
                 uniqName = PREFIX + randomAlphanumeric(THREAD_LOCAL_NAME_LENGTH);
-            } while (ALL_NAMES.containsKey(uniqName));
-            ALL_NAMES.put(uniqName, this);
+            } while (ALL_NAMES.contains(uniqName));
+            ALL_NAMES.add(uniqName);
             uniqueNameForRequestContext = uniqName;
         }
     }
@@ -116,5 +121,13 @@ public class RequestContextCache<K, V> extends RequestContextHolder
         if (thisMap != null) {
             thisMap.remove(key);
         }
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        synchronized (ALL_NAMES) {
+            ALL_NAMES.remove(uniqueNameForRequestContext);
+        }
+        super.finalize();
     }
 }

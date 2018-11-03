@@ -5,6 +5,8 @@
     <version>1.0.7-SNAPSHOT</version>
 
     <properties>
+        <jsr305.version>3.0.2</jsr305.version>
+
         <!-- test -->
         <junit-jupiter.version>5.0.2</junit-jupiter.version>
         <junit-platform.version>1.0.2</junit-platform.version>
@@ -80,6 +82,12 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.21</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>${jsr305.version}</version>
+            <optional>true</optional><!-- needed only for annotations -->
         </dependency>
 
         <dependency>
