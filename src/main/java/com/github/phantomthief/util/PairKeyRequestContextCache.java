@@ -12,6 +12,7 @@ import com.github.phantomthief.tuple.TwoTuple;
 /**
  * @author w.vela
  */
+@Deprecated
 public class PairKeyRequestContextCache<K1, K2, V> extends RequestContextCache<TwoTuple<K1, K2>, V> {
 
     public PairKeyRequestContextCache() {

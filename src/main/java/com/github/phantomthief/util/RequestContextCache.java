@@ -18,6 +18,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 /**
  * @author w.vela
  */
+@Deprecated
 public class RequestContextCache<K, V> extends RequestContextHolder
                                 implements IMultiDataAccess<K, V> {
 
