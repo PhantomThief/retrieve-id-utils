@@ -21,6 +21,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 /**
  * @author w.vela
+ *
+ * use https://github.com/PhantomThief/scope instead.
  */
 @Deprecated
 public class RequestContextCache<K, V> extends RequestContextHolder
