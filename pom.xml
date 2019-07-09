@@ -50,9 +50,9 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:https://github.com/PhantomThief/retrieve-id-utils.git</connection>
+        <connection>scm:git:git@github.com:PhantomThief/retrieve-id-utils.git</connection>
         <url>https://github.com/PhantomThief/retrieve-id-utils.git</url>
-        <developerConnection>scm:git:https://github.com/PhantomThief/retrieve-id-utils.git
+        <developerConnection>scm:git:git@github.com:PhantomThief/retrieve-id-utils.git
         </developerConnection>
     </scm>
 
