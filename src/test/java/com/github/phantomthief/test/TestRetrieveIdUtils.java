@@ -21,7 +21,7 @@ class TestRetrieveIdUtils {
     void test() {
         List<Integer> ids = Arrays.asList(1, 2, 3, 4, 5);
         Map<Integer, String> firstSet = new HashMap<>();
-        Map<Integer, String> result = RetrieveIdUtils.get(ids, Arrays.asList( //
+        Map<Integer, String> result = RetrieveIdUtils.get(ids, Arrays.asList(
                 new IMultiDataAccess<Integer, String>() {
 
                     @Override
@@ -33,7 +33,7 @@ class TestRetrieveIdUtils {
                     public void set(Map<Integer, String> dataMap) {
                         firstSet.putAll(dataMap);
                     }
-                }, //
+                },
                 new IMultiDataAccess<Integer, String>() {
 
                     @Override

@@ -34,7 +34,7 @@ Map<Integer, String> result = RetrieveIdUtils.get(ids, Arrays.asList( s//
             public void set(Map<Integer, String> dataMap) {
             	// 第一级缓存回流
             }
-        }, //
+        },
         new IMultiDataAccess<Integer, String>() {
 
             @Override

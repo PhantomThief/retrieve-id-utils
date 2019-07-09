@@ -37,9 +37,9 @@ class LoadingMergerTest {
     @Test
     void testMerge() {
         System.out.println("start to test normal load");
-        LoadingMerger<Integer, String> loadingMerger = LoadingMerger.<Integer, String> newBuilder() //
-                .timeout(1, SECONDS) //
-                .loader(this::load) //
+        LoadingMerger<Integer, String> loadingMerger = LoadingMerger.<Integer, String> newBuilder()
+                .timeout(1, SECONDS)
+                .loader(this::load)
                 .build();
         ExecutorService executorService = Executors.newFixedThreadPool(10);
         executorService.execute(() -> {
@@ -85,9 +85,9 @@ class LoadingMergerTest {
     @Test
     void testSlowMerge() {
         System.out.println("start to test slow load");
-        LoadingMerger<Integer, String> loadingMerger = LoadingMerger.<Integer, String> newBuilder() //
-                .timeout(500, MILLISECONDS) //
-                .loader(this::slowLoad) //
+        LoadingMerger<Integer, String> loadingMerger = LoadingMerger.<Integer, String> newBuilder()
+                .timeout(500, MILLISECONDS)
+                .loader(this::slowLoad)
                 .build();
         ExecutorService executorService = Executors.newFixedThreadPool(10);
         executorService.execute(() -> {
