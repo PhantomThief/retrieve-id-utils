@@ -28,7 +28,7 @@ import org.slf4j.Logger;
  */
 public class LoadingMerger<K, V> implements IMultiDataAccess<K, V> {
 
-    private static Logger logger = getLogger(LoadingMerger.class);
+    private static final Logger logger = getLogger(LoadingMerger.class);
 
     private final ConcurrentMap<K, LoadingHolder<K, V>> currentLoading = new ConcurrentHashMap<>();
     private final long waitOtherLoadingTimeout;
