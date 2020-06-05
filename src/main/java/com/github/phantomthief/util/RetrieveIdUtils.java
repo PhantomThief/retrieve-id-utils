@@ -10,10 +10,26 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.util.concurrent.RateLimiter;
+
 /**
  * @author w.vela
  */
 public final class RetrieveIdUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(RetrieveIdUtils.class);
+    @SuppressWarnings("UnstableApiUsage")
+    private static final RateLimiter rateLimiter = RateLimiter.create(1);
+
+    private static void rateLog(Runnable doLog) {
+        //noinspection UnstableApiUsage
+        if (rateLimiter.tryAcquire()) {
+            doLog.run();
+        }
+    }
 
     public static <K, V> V getOne(K key, Iterable<IMultiDataAccess<K, V>> list) {
         return get(singleton(key), list).get(key);
@@ -53,5 +69,45 @@ public final class RetrieveIdUtils {
             result.putAll(lowerResult);
         }
         return result;
+    }
+
+    /**
+     * 多级 cache 带回流, 不缓存 null value.
+     * 如果有单个 IMultiDataAccess 抛出异常，会 fail-safe 并尝试后续的节点
+     * 如果所有 IMultiDataAccess 都抛出异常，则抛出 AllFailException;
+     * @return map without null value.
+     */
+    public static <K, V> Map<K, V> getFailSafeUnlessAllFailed(Collection<K> keys, Iterable<IMultiDataAccess<K, V>> list) {
+        Iterator<IMultiDataAccess<K, V>> iterator = list.iterator();
+        if (!iterator.hasNext() || keys.isEmpty()) {
+            return emptyMap();
+        }
+        boolean allFail = true;
+
+        Set<K> leftKeys = new HashSet<>(keys);
+        Map<K, V> result = newHashMapWithExpectedSize(leftKeys.size());
+        while (iterator.hasNext() && !leftKeys.isEmpty()) {
+            IMultiDataAccess<K, V> dao = iterator.next();
+            try {
+                Map<K, V> currentResult = dao.get(leftKeys);
+                currentResult.forEach((k, v) -> {
+                    result.put(k, v);
+                    leftKeys.remove(k);
+                });
+                allFail = false;
+            } catch (Throwable t) {
+                rateLog(() -> logger.warn("[fail safe]", t));
+            }
+        }
+
+        if (allFail) {
+            throw new AllFailedException();
+        }
+        return result;
+    }
+
+    public static class AllFailedException extends RuntimeException {
+        public AllFailedException() {
+        }
     }
 }
