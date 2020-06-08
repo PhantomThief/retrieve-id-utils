@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 
 import com.github.phantomthief.util.IMultiDataAccess;
 import com.github.phantomthief.util.RetrieveIdUtils;
-import com.github.phantomthief.util.RetrieveIdUtils.AllFailedException;
+import com.github.phantomthief.util.AllFailedException;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 

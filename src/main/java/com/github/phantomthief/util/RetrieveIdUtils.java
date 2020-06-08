@@ -74,8 +74,9 @@ public final class RetrieveIdUtils {
     /**
      * 多级 cache 带回流, 不缓存 null value.
      * 如果有单个 IMultiDataAccess 抛出异常，会 fail-safe 并尝试后续的节点
-     * 如果所有 IMultiDataAccess 都抛出异常，则抛出 AllFailException;
+     *
      * @return map without null value.
+     * @throws AllFailedException 如果所有 IMultiDataAccess 都抛出异常，则抛出 AllFailException
      */
     public static <K, V> Map<K, V> getFailSafeUnlessAllFailed(Collection<K> keys, Iterable<IMultiDataAccess<K, V>> list) {
         Iterator<IMultiDataAccess<K, V>> iterator = list.iterator();
@@ -106,8 +107,4 @@ public final class RetrieveIdUtils {
         return result;
     }
 
-    public static class AllFailedException extends RuntimeException {
-        public AllFailedException() {
-        }
-    }
 }
