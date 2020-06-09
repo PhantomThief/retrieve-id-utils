@@ -113,7 +113,7 @@ public final class RetrieveIdUtils {
                 }
             });
         } catch (Throwable t) {
-            rateLog(() -> logger.warn("[fail-safe] get exception", t));
+            rateLog(() -> logger.warn("[fail-safe] get exception, dao: [{}]", currentDao, t));
         }
 
         Map<K, V> lowerResult = getByIteratorFailSafeUnlessAllFailed(keys, iterator, hasSuccess);
@@ -121,7 +121,7 @@ public final class RetrieveIdUtils {
             try {
                 currentDao.set(lowerResult);
             } catch (Throwable t) {
-                rateLog(() -> logger.warn("[fail-safe] set exception"));
+                rateLog(() -> logger.warn("[fail-safe] set exception, dao: [{}]", currentDao, t));
             }
             result.putAll(lowerResult);
         }
