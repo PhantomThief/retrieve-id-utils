@@ -5,6 +5,7 @@ import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -78,33 +79,52 @@ public final class RetrieveIdUtils {
      * @return map without null value.
      * @throws AllFailedException 如果所有 IMultiDataAccess 都抛出异常，则抛出 AllFailException
      */
-    public static <K, V> Map<K, V> getFailSafeUnlessAllFailed(Collection<K> keys, Iterable<IMultiDataAccess<K, V>> list) {
+    public static <K, V> Map<K, V> getFailSafeUnlessAllFailed(Collection<K> keys,
+            Iterable<IMultiDataAccess<K, V>> list) {
         Iterator<IMultiDataAccess<K, V>> iterator = list.iterator();
         if (!iterator.hasNext() || keys.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return getByIteratorFailSafeUnlessAllFailed(new HashSet<>(keys), iterator, false);
+    }
+
+    private static <K, V> Map<K, V> getByIteratorFailSafeUnlessAllFailed(Set<K> keys,
+            Iterator<IMultiDataAccess<K, V>> iterator, boolean hasSuccess) {
+        if (keys.isEmpty()) {
             return emptyMap();
         }
-        boolean allFail = true;
-
-        Set<K> leftKeys = new HashSet<>(keys);
-        Map<K, V> result = newHashMapWithExpectedSize(leftKeys.size());
-        while (iterator.hasNext() && !leftKeys.isEmpty()) {
-            IMultiDataAccess<K, V> dao = iterator.next();
-            try {
-                Map<K, V> currentResult = dao.get(leftKeys);
-                currentResult.forEach((k, v) -> {
-                    result.put(k, v);
-                    leftKeys.remove(k);
-                });
-                allFail = false;
-            } catch (Throwable t) {
-                rateLog(() -> logger.warn("[fail safe]", t));
+        if (!iterator.hasNext()) {
+            if (hasSuccess) {
+                return emptyMap();
+            } else {
+                throw new AllFailedException();
             }
         }
 
-        if (allFail) {
-            throw new AllFailedException();
+        IMultiDataAccess<K, V> currentDao = iterator.next();
+        Map<K, V> result = newHashMapWithExpectedSize(keys.size());
+        try {
+            Map<K, V> originalResult = currentDao.get(keys);
+            hasSuccess = true;
+            originalResult.forEach((k, v) -> {
+                if (v != null) {
+                    result.put(k, v);
+                    keys.remove(k);
+                }
+            });
+        } catch (Throwable t) {
+            rateLog(() -> logger.warn("[fail-safe] get exception, dao: [{}]", currentDao, t));
+        }
+
+        Map<K, V> lowerResult = getByIteratorFailSafeUnlessAllFailed(keys, iterator, hasSuccess);
+        if (!lowerResult.isEmpty()) {
+            try {
+                currentDao.set(lowerResult);
+            } catch (Throwable t) {
+                rateLog(() -> logger.warn("[fail-safe] set exception, dao: [{}]", currentDao, t));
+            }
+            result.putAll(lowerResult);
         }
         return result;
     }
-
 }
