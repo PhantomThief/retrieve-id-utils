@@ -84,14 +84,20 @@ class TestRetrieveIdUtils {
     }
 
     @Test
-    void testGetFailSafe() {
+    void testGetFailSafeUnlessAllFailed() {
         List<Integer> ids = Arrays.asList(1, 2, 3, 4, 5);
         Map<Integer, String> expectResult = ImmutableMap.of(1, "1", 2, "2", 3, "3", 4, "4", 5, "5");
 
+        AtomicInteger setCounter = new AtomicInteger(0);
         IMultiDataAccess<Integer, String> errorDao = new IMultiDataAccess<Integer, String>() {
             @Override
             public Map<Integer, String> get(Collection<Integer> keys) {
                 throw new RuntimeException();
+            }
+
+            @Override
+            public void set(Map<Integer, String> dataMap) {
+                setCounter.incrementAndGet();
             }
         };
 
@@ -116,21 +122,33 @@ class TestRetrieveIdUtils {
                 RetrieveIdUtils.getFailSafeUnlessAllFailed(ids, Arrays.asList(errorDao, successDao, counterDao));
         Assertions.assertTrue(Maps.difference(expectResult, result1).areEqual());
         Assertions.assertEquals(0, counter.get());
+        Assertions.assertEquals(1, setCounter.get());
 
         Map<Integer, String> result2 = RetrieveIdUtils.getFailSafeUnlessAllFailed(ids, Collections.emptyList());
         Assertions.assertTrue(result2.isEmpty());
 
+        setCounter.set(0);
         Assertions.assertThrows(AllFailedException.class,
                 () -> RetrieveIdUtils.getFailSafeUnlessAllFailed(ids, Collections.singletonList(errorDao)));
+        Assertions.assertEquals(0, setCounter.get());
 
         Assertions.assertThrows(AllFailedException.class,
                 () -> RetrieveIdUtils.getFailSafeUnlessAllFailed(ids, Arrays.asList(errorDao, errorDao)));
+        Assertions.assertEquals(0, setCounter.get());
 
         RetrieveIdUtils.getFailSafeUnlessAllFailed(ids, Arrays.asList(errorDao, counterDao, errorDao));
         Assertions.assertEquals(1, counter.get());
+        Assertions.assertEquals(0, setCounter.get());
 
         counter.set(0);
         RetrieveIdUtils.getFailSafeUnlessAllFailed(ids, Arrays.asList(errorDao, counterDao, counterDao));
         Assertions.assertEquals(2, counter.get());
+        Assertions.assertEquals(0, setCounter.get());
+
+        counter.set(0);
+        setCounter.set(0);
+        RetrieveIdUtils.getFailSafeUnlessAllFailed(ids, Arrays.asList(errorDao, errorDao, counterDao, counterDao, successDao));
+        Assertions.assertEquals(2, counter.get());
+        Assertions.assertEquals(2, setCounter.get());
     }
 }
