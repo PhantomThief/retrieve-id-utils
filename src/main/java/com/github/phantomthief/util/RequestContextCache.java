@@ -29,7 +29,8 @@ public class RequestContextCache<K, V> extends RequestContextHolder
                                 implements IMultiDataAccess<K, V> {
 
     private static final String PREFIX = "_c";
-    private static final int THREAD_LOCAL_NAME_LENGTH = 2;
+    // 如果同时在使用的id超过组合数，会进入死循环。这里random的id调整到4预期能避免触发BUG
+    private static final int THREAD_LOCAL_NAME_LENGTH = 4;
     @GuardedBy("self")
     private static final Set<String> ALL_NAMES = new HashSet<>();
 
