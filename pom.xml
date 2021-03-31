@@ -8,7 +8,7 @@
         <commons-lang3.version>3.4</commons-lang3.version>
         <slf4j-api.version>1.7.21</slf4j-api.version>
         <spring-web.version>4.2.4.RELEASE</spring-web.version>
-        <guava.version>28.1-jre</guava.version>
+        <guava.version>29.0-jre</guava.version>
         <commons-collections4.version>4.1</commons-collections4.version>
         <more-lambdas.version>0.1.8</more-lambdas.version>
         <jsr305.version>3.0.2</jsr305.version>
